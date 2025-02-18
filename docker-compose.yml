@@ -1,0 +1,8 @@
+﻿services:
+  vnc-server:
+    build: .
+    container_name: vnc_container
+    ports:
+      - "5900:5900"
+      - "2222:22"
+    restart: unless-stopped
