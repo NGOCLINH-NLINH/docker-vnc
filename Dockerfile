@@ -20,12 +20,14 @@ RUN mkdir /var/run/sshd
 RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 RUN echo "dockeruser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-RUN mkdir /home/dockeruser/.vnc && \
+RUN mkdir -p /home/dockeruser/.vnc && \
     echo "docker" | tightvncpasswd -f > /home/dockeruser/.vnc/passwd && \
     chmod 600 /home/dockeruser/.vnc/passwd && \
     chown -R dockeruser:dockeruser /home/dockeruser/.vnc
 
 RUN echo "#!/bin/bash" > /start_vnc.sh && \
+    echo "rm -rf /tmp/.X1-lock /tmp/.X11-unix/X1" >> /start_vnc.sh && \
+    echo "mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix" >> /start_vnc.sh && \
     echo "Xvfb :1 -screen 0 1280x800x16 &" >> /start_vnc.sh && \
     echo "sleep 3" >> /start_vnc.sh && \
     echo "export DISPLAY=:1" >> /start_vnc.sh && \
@@ -35,4 +37,4 @@ RUN echo "#!/bin/bash" > /start_vnc.sh && \
 
 EXPOSE 22 5900
 
-CMD ["/bin/bash", "-c", "/usr/sbin/sshd && /start_vnc.sh"]
+CMD ["/bin/bash", "-c", "/usr/sbin/sshd && exec /start_vnc.sh"]
